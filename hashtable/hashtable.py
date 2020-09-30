@@ -21,7 +21,8 @@ class HashTable:
     """
 
     def __init__(self, capacity):
-        # Your code here
+        self.capacity = capacity
+        self.buckets = [None] * capacity
 
 
     def get_num_slots(self):
@@ -52,8 +53,18 @@ class HashTable:
 
         Implement this, and/or DJB2.
         """
+        # used this ⬇️
+        # --> https://github.com/sup/pyhash/blob/master/pyhash/pyhash.py
+        FNV_prime = 1099511628211 # FNV_prime (in hex, 0x100000001b3)
+        FNV_offset_basis = 14695981039346656037 # FNV_offset_basis (in hex, 0xcbf29ce484222325)
+        bytes = key.encode()
 
-        # Your code here
+        hash = FNV_offset_basis
+        for byte in bytes:
+            hash = hash * FNV_prime
+            hash = hash ^ byte
+
+        return hash
 
 
     def djb2(self, key):
@@ -62,7 +73,16 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
+
+        # used this ⬇️
+        # --> http://www.goodmath.org/blog/2013/10/20/basic-data-structures-hash-tables/
+        hash = 5381
+        bytes = key.encode()
+
+        for byte in bytes:
+            hash = ((hash * 33) ^ byte) % 0x100000000
+
+        return hash
 
 
     def hash_index(self, key):
@@ -70,46 +90,51 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        return self.fnv1(key) % self.capacity
+        # return self.djb2(key) % self.capacity
 
     def put(self, key, value):
         """
         Store the value with the given key.
-
-        Hash collisions should be handled with Linked List Chaining.
+        --> Hash collisions should be handled with Linked List Chaining.
 
         Implement this.
         """
-        # Your code here
+        index = self.hash_index(key)
+        self.buckets[index] = HashTableEntry(key, value)
 
 
     def delete(self, key):
         """
         Remove the value stored with the given key.
-
-        Print a warning if the key is not found.
+        --> Print a warning if the key is not found.
 
         Implement this.
         """
-        # Your code here
+        index = self.hash_index(key)
+        if not self.buckets[index]:
+            print("This key doesn't exist.")
+        else:
+            self.buckets[index] = None
 
 
     def get(self, key):
         """
         Retrieve the value stored with the given key.
-
-        Returns None if the key is not found.
+        --> Returns None if the key is not found.
 
         Implement this.
         """
-        # Your code here
+        index = self.hash_index(key)
+        if not self.buckets[index]:
+            return None
+        else:
+            return self.buckets[index].value
 
 
     def resize(self, new_capacity):
         """
-        Changes the capacity of the hash table and
-        rehashes all key/value pairs.
+        Changes the capacity of the hash table and rehashes all key/value pairs.
 
         Implement this.
         """
@@ -135,19 +160,19 @@ if __name__ == "__main__":
 
     print("")
 
-    # Test storing beyond capacity
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    # # Test storing beyond capacity
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
-    # Test resizing
-    old_capacity = ht.get_num_slots()
-    ht.resize(ht.capacity * 2)
-    new_capacity = ht.get_num_slots()
+    # # Test resizing
+    # old_capacity = ht.get_num_slots()
+    # ht.resize(ht.capacity * 2)
+    # new_capacity = ht.get_num_slots()
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # Test if data intact after resizing
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    # # Test if data intact after resizing
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
-    print("")
+    # print("")
